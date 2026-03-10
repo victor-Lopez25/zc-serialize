@@ -1,5 +1,6 @@
 include <ctype.h>
 
+// NOTE: Not sure why Zen-C can't find std/core.zc and std/slice.zc without abs path
 import "D:/Zen-C/std/core.zc"
 import "D:/Zen-C/std/slice.zc"
 
