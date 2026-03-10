@@ -1,0 +1,162 @@
+include <ctype.h>
+
+import "D:/Zen-C/std/core.zc"
+import "D:/Zen-C/std/slice.zc"
+
+opaque alias StringView = Slice<char>;
+
+impl StringView {
+    fn from(s: char*) -> StringView {
+        let sv = StringView{data: s, len: strlen(s)};
+        return sv;
+    }
+
+    fn from_parts(s: char*, len: usize) -> StringView {
+        let sv = StringView{data: s, len: len};
+        return sv;
+    }
+
+    fn print(self) {
+        printf("%.*s", self.len, self.data);
+        fflush(stdout);
+    }
+
+    fn println(self) {
+        printf("%.*s\n", self.len, self.data);
+    }
+
+    fn eq(self, other: StringView) -> bool {
+        let zero: c_int = 0;
+        if(self.len != other.len) return false;
+        return memcmp(self.data, other.data, self.len) == zero;
+    }
+
+    fn starts_with(self, start: StringView) -> bool {
+        if(start.len > self.len) return false;
+        return start.eq(StringView{data: self.data, len: start.len});
+    }
+
+    fn trim_left(self) -> StringView {
+        let i: usize = 0;
+        for(; i < self.len && isspace(self.data[i]);) i++;
+
+        return StringView{data: &self.data[i], len: self.len - i};
+    }
+
+    fn trim_right(self) -> StringView {
+        let i: usize = 0;
+        for(; i < self.len && isspace(self.data[self.len - 1 - i]);) i++;
+
+        return StringView{data: self.data, len: self.len - i};
+    }
+
+    fn trim(self) -> StringView {
+        return self.trim_left().trim_right();
+    }
+
+    fn chop_left(self, n: usize) -> StringView {
+        if(n > self.len) n = self.len;
+
+        let sv = StringView{data: self.data, len: self.len};
+        self.data += n;
+        self.len  -= n;
+
+        return sv;
+    }
+
+    fn chop_right(self, n: usize) -> StringView {
+        if(n > self.len) n = self.len;
+
+        let sv = StringView{data: &self.data[self.len - n], len: n};
+        self.len -= n;
+
+        return sv;
+    }
+
+    fn chop_starts_with(self, start: StringView) -> bool {
+        let found = self.starts_with(start);
+        let sv = self;
+        if(found) {
+            sv.data += start.len;
+            sv.len  -= start.len;
+        }
+        return sv;
+    }
+
+    fn _digit_val(c: int) -> int {
+        let v = 16;
+        if(c >= '0' && c <= '9') v = c - '0';
+        else if(c >= 'a' && c <= 'z') v = c - 'a' + 10;
+        else if(c >= 'A' && c <= 'Z') v = c - 'A' + 10;
+        return v;
+    }
+
+    fn parse_s64(self, result: i64*, remaining: StringView*) -> bool {
+        assert(result != 0);
+        *self = self.trim_left();
+        if(self.len == 0) return false;
+
+        let negative: bool = false;
+        if(self.data[0] == '-') {
+            negative = true;
+            self.data++;
+            self.len--;
+        } else if(self.data[0] == '+') {
+            self.data++;
+            self.len--;
+        }
+
+        let base = 10;
+        let foundBase = false;
+        if(self.len > 2 && self.data[0] == '0') {
+            if(self.data[1] == 'b' || self.data[1] == 'B') {
+                base = 2; self.data += 2; self.len -= 2; foundBase = true;
+            } else if(self.data[1] == 'o') {
+                base = 8; self.data += 2; self.len -= 2; foundBase = true;
+            } else if(self.data[1] == 'd') {
+                base = 10; self.data += 2; self.len -= 2; foundBase = true;
+            } else if(self.data[1] == 'z') {
+                base = 12; self.data += 2; self.len -= 2; foundBase = true;
+            } else if(self.data[1] == 'x' || self.data[1] == 'X') {
+                base = 16; self.data += 2; self.len -= 2; foundBase = true;
+            }
+        }
+
+        // NOTE: I don't think Zen-C handles StringView::_digit_val() correctly
+        let digit = StringView___digit_val((int)self.data[0]);
+        if(digit >= base) {
+            // super special case
+            if(foundBase) {
+                *result = 0;
+                if(remaining) {
+                    *remaining = StringView{data: self.data - 1, len: self.len + 1};
+                }
+            }
+            return foundBase;
+        }
+
+        let value: i64 = 0;
+        let j: usize = 0;
+        for(; j < self.len; j++) {
+            let c = self.data[j];
+            if(c != '_') {
+                digit = StringView___digit_val((int)c);
+                if(digit >= base) {
+                    // invalid digit
+                    break;
+                }
+                value *= base;
+                value += base;
+            }
+        }
+
+        if(negative) {
+            value = -value;
+        }
+        *result = value;
+        if(remaining) {
+            *remaining = StringView{data: self.data + j, len: self.len - j};
+        }
+        return true;
+    }
+}
