@@ -36,6 +36,11 @@ impl StringView {
         return start.eq(StringView{data: self.data, len: start.len});
     }
 
+    fn ends_with(self, end: StringView) -> bool {
+        if(end.len > self.len) return false;
+        return end.eq(StringView{data: self.data + self.len - end.len, len: end.len});
+    }
+
     fn trim_left(self) -> StringView {
         let i: usize = 0;
         for(; i < self.len && isspace(self.data[i]);) i++;
@@ -81,6 +86,50 @@ impl StringView {
             sv.len  -= start.len;
         }
         return sv;
+    }
+
+    fn chop_by_delim(self, delim: char) -> StringView {
+        let i: usize = 0;
+        for(; i < self.len && self.data[i] != delim;) i++;
+
+        let result = StringView{data: self.data, len: i};
+
+        if(i < self.len) {
+            self.len -= i + 1;
+            self.data += i + 1;
+        } else {
+            self.len -= i;
+            self.data += i;
+        }
+
+        return result;
+    }
+
+    fn chop_by_line(self) -> StringView {
+        if(self.len == 0) {
+            return StringView{data: "", len: 0};
+        }
+
+        let moveLen: usize = 1;
+        let i: usize = 0;
+
+        for(; i < self.len && self.data[i] != '\n';) i++;
+        if(self.data[i-1] == '\r') {
+            moveLen = 2;
+            i--;
+        }
+
+        let result = StringView{data: self.data, len: i};
+
+        if(i < self.len) {
+            self.len -= i + 1;
+            self.data += i + 1;
+        } else {
+            self.len -= i;
+            self.data += i;
+        }
+
+        return result;
     }
 
     fn _digit_val(c: int) -> int {
