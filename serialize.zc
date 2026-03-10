@@ -1,5 +1,5 @@
 import "string_view.zc"
-import "D:/Zen-C/std/string.zc"
+import "std/string.zc"
 
 def SerializeType_JSON = 0;
 def SerializeType_C99_Initializer = 1;
