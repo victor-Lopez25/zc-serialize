@@ -1,6 +1,5 @@
 include <ctype.h>
 
-// NOTE: Not sure why Zen-C can't find std/core.zc and std/slice.zc without abs path
 import "std/core.zc"
 import "std/slice.zc"
 
@@ -160,4 +159,6 @@ impl StringView {
         }
         return true;
     }
+
+    // TODO: parse_f64 (this will be big)
 }

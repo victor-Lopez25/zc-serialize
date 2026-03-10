@@ -19,20 +19,73 @@ struct SerializeScope {
     arrayElemIdx: u32;
 }
 
+struct SerializationContext_ {
+    scopes: Vec<SerializeScope>;
+    currentElem: StringView;
+    floatFmt: char*;
+    indent: u8;
+    shouldQuoteStrings: bool;
+
+    // for TOML:
+    ignoreElementBegin: bool;
+    doneFirstObject: bool;
+    shouldPushScope: bool;
+    scopeTypeToPush: u8;
+    countNonNewlineScopes: usize;
+
+    // for XML:
+    shouldPopScope: bool;
+}
+
+// TODO: Port deserialization
+struct DeserializationContext_ {
+    ignore: u8;
+}
+
+union SerializeDeserializeUnion {
+    serialize: SerializationContext_;
+    deserialize: DeserializationContext_;
+}
+
 struct SerializeContext {
     type: u8;
     isSerializing: bool;
     output: String,
 
-    union as {
-        struct serialize {
-            scopes: Vec<SerializeScope>;
-        };
-        struct deserialize {
-            ignore: u8;
-        };
-    };
+    as: SerializeDeserializeUnion;
 
-    x: int;
+    ObjectBegin_Impl: fn*(SerializeContext*) -> bool;
+    AttributeName_Impl: fn*(SerializeContext*, StringView) -> bool;
+    ObjectEnd_Impl: fn*(SerializeContext*) -> bool;
+    ArrayBegin_Impl: fn*(SerializeContext*, StringView) -> bool;
+    ArrayEnd_Impl: fn*(SerializeContext*) -> bool;
+
+    SerializeNull_Impl: fn*(SerializeContext*) -> bool;
+    SerializeOpBool_Impl: fn*(SerializeContext*, bool*) -> bool;
+    SerializeOpInt_Impl: fn*(SerializeContext*, i64*) -> bool;
+    SerializeOpFloat_Impl: fn*(SerializeContext*, f64*) -> bool;
+    SerializeOpString_Impl: fn*(SerializeContext*, char**) -> bool;
+    SerializeOpView_Impl: fn*(SerializeContext*, StringView*) -> bool;
+
+    // Internals
+    ElementBegin: fn*(SerializeContext*);
+    ElementEnd: fn*(SerializeContext*);
+}
+
+impl SerializeContext {
+    fn serialize(type: u8, indent: u8 = 0, floatFmt: char* = "%lf") -> SerializeContext {
+        let result: SerializeContext;
+        result.type = type;
+        result.isSerializing = true;
+        result.as.serialize.indent = indent;
+        result.as.serialize.floatFmt = floatFmt;
+
+        if type == SerializeType_JSON {
+            // TODO
+        } else {
+            // the rest come after, I'm doing json first
+            assert(false);
+        }
+    }
 }
 
