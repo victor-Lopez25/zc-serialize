@@ -1,6 +1,38 @@
 import "string_view.zc"
+import "D:/Zen-C/std/string.zc"
+
+def SerializeType_JSON = 0;
+def SerializeType_C99_Initializer = 1;
+def SerializeType_XML = 2;
+def SerializeType_TOML = 3;
+
+def SerializeScope_Object = 0;
+def SerializeScope_Array = 1;
+
+struct SerializeScope {
+    type: u8;
+    prevNeedsComma: bool;
+    didKey: bool;
+    scopeNeedsNewline: bool; // for TOML
+    currentElem: StringView;
+    arrayElemName: StringView;
+    arrayElemIdx: u32;
+}
 
 struct SerializeContext {
+    type: u8;
+    isSerializing: bool;
+    output: String,
+
+    union as {
+        struct serialize {
+            scopes: Vec<SerializeScope>;
+        };
+        struct deserialize {
+            ignore: u8;
+        };
+    };
+
     x: int;
 }
 
