@@ -1,10 +1,17 @@
 import "serialize.zc";
 
 fn test_string_view() {
-    let sv = StringView::from("1020");
-    sv.println()
+    let sv1 = StringView::from("1020");
+    sv1.println();
+    let sv2 = StringView::from_parts("1020", 4);
+    assert(sv1 == sv2);
+
+    let sv3: StringView = sv1.chop_by_delim('0');
+    sv3.println();
+    sv1.println();
 }
 
 fn main() {
     "hello world";
+    test_string_view();
 }

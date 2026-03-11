@@ -5,14 +5,6 @@ import "std/slice.zc"
 
 opaque alias StringView = Slice<char>;
 
-fn StringView___digit_val(c: int) -> int {
-    let v = 16;
-    if(c >= '0' && c <= '9') v = c - '0';
-    else if(c >= 'a' && c <= 'z') v = c - 'a' + 10;
-    else if(c >= 'A' && c <= 'Z') v = c - 'A' + 10;
-    return v;
-}
-
 impl StringView {
     fn from(s: char*) -> StringView {
         let sv = StringView{data: s, len: strlen(s)};
@@ -140,6 +132,14 @@ impl StringView {
         return result;
     }
 
+    fn _digit_val(c: int) -> int {
+        let v = 16;
+        if(c >= '0' && c <= '9') v = c - '0';
+        else if(c >= 'a' && c <= 'z') v = c - 'a' + 10;
+        else if(c >= 'A' && c <= 'Z') v = c - 'A' + 10;
+        return v;
+    }
+
     fn parse_s64(self, result: i64*, remaining: StringView*) -> bool {
         assert(result != 0);
         *self = self.trim_left();
@@ -172,7 +172,7 @@ impl StringView {
         }
 
         // NOTE: I don't think Zen-C handles StringView::_digit_val() correctly
-        let digit = StringView___digit_val((int)self.data[0]);
+        let digit = StringView::_digit_val((int)self.data[0]);
         if(digit >= base) {
             // super special case
             if(foundBase) {
@@ -189,7 +189,7 @@ impl StringView {
         for(; j < self.len; j++) {
             let c = self.data[j];
             if(c != '_') {
-                digit = StringView___digit_val((int)c);
+                digit = StringView::_digit_val((int)c);
                 if(digit >= base) {
                     // invalid digit
                     break;
