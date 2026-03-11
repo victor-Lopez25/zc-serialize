@@ -1,5 +1,10 @@
 import "serialize.zc";
 
+fn test_string_view() {
+    let sv = StringView::from("1020");
+    sv.println()
+}
+
 fn main() {
     "hello world";
 }
