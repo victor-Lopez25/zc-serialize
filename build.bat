@@ -1,3 +1,3 @@
 @echo off
 
-zc run main.zc
+zc run main.zc --emit-c
