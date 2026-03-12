@@ -17,6 +17,10 @@ impl StringViewLineIter {
         let line = self.sv.chop_by_line();
         return Option<StringView>::Some(line);
     }
+
+    fn iterator(self) -> StringViewLineIter {
+        return *self;
+    }
 }
 
 impl StringView {
@@ -136,8 +140,8 @@ impl StringView {
         let result = StringView{data: self.data, len: i};
 
         if(i < self.len) {
-            self.len -= i + 1;
-            self.data += i + 1;
+            self.len -= i + moveLen;
+            self.data += i + moveLen;
         } else {
             self.len -= i;
             self.data += i;

@@ -9,6 +9,28 @@ fn test_string_view() {
     let sv3: StringView = sv1.chop_by_delim('0');
     sv3.println();
     sv1.println();
+
+    let sv4 = StringView::from(
+"""struct StringViewLineIter {{
+    sv: StringView;
+}}
+
+impl StringViewLineIter {{
+    fn next(self) -> Option<StringView> {{
+        if(self.sv.len == 0) return Option<StringView>::None();
+
+        let line = self.sv.chop_by_line();
+        return Option<StringView>::Some(line);
+    }}
+}}
+""");
+
+    let lineIdx = 0;
+    for l in sv4.get_line_iterator() {
+        printf("%lu:\t", lineIdx);
+        l.println();
+        lineIdx++;
+    }
 }
 
 fn main() {
