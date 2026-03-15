@@ -49,32 +49,34 @@ impl StringView {
         return memcmp(self.data, other.data, self.len) == zero;
     }
 
-    fn starts_with(self, start: StringView) -> bool {
-        if(start.len > self.len) return false;
-        return start.eq(StringView{data: self.data, len: start.len});
+    fn starts_with(self, prefix: StringView) -> bool {
+        if(prefix.len > self.len) return false;
+        return prefix.eq(StringView{data: self.data, len: prefix.len});
     }
 
-    fn ends_with(self, end: StringView) -> bool {
-        if(end.len > self.len) return false;
-        return end.eq(StringView{data: self.data + self.len - end.len, len: end.len});
+    fn ends_with(self, postfix: StringView) -> bool {
+        if(postfix.len > self.len) return false;
+        return postfix.eq(StringView{data: self.data + self.len - postfix.len, len: postfix.len});
     }
 
-    fn trim_left(self) -> StringView {
+    fn trim_left(self) {
         let i: usize = 0;
         for(; i < self.len && isspace(self.data[i]);) i++;
 
-        return StringView{data: &self.data[i], len: self.len - i};
+        self.data += i;
+        self.len -= i;
     }
 
-    fn trim_right(self) -> StringView {
+    fn trim_right(self) {
         let i: usize = 0;
         for(; i < self.len && isspace(self.data[self.len - 1 - i]);) i++;
 
-        return StringView{data: self.data, len: self.len - i};
+        self.len -= i;
     }
 
-    fn trim(self) -> StringView {
-        return self.trim_left().trim_right();
+    fn trim(self) {
+        self.trim_left();
+        self.trim_right();
     }
 
     fn chop_left(self, n: usize) -> StringView {
@@ -96,12 +98,12 @@ impl StringView {
         return sv;
     }
 
-    fn chop_starts_with(self, start: StringView) -> bool {
-        let found = self.starts_with(start);
+    fn chop_starts_with(self, prefix: StringView) -> bool {
+        let found = self.prefixs_with(prefix);
         let sv = self;
         if(found) {
-            sv.data += start.len;
-            sv.len  -= start.len;
+            sv.data += prefix.len;
+            sv.len  -= prefix.len;
         }
         return sv;
     }
