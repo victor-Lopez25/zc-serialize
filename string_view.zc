@@ -99,7 +99,7 @@ impl StringView {
     }
 
     fn chop_starts_with(self, prefix: StringView) -> bool {
-        let found = self.prefixs_with(prefix);
+        let found = self.starts_with(prefix);
         let sv = self;
         if(found) {
             sv.data += prefix.len;
@@ -166,8 +166,8 @@ impl StringView {
     }
 
     fn parse_s64(self) -> (i64, bool) {
-        *self = self.trim_left();
-        if(self.len == 0) return false;
+        self.trim_left();
+        if(self.len == 0) return (0, false);
 
         let negative: bool = false;
         if(self.data[0] == '-') {
