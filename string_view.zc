@@ -165,8 +165,7 @@ impl StringView {
         return v;
     }
 
-    fn parse_s64(self, result: i64*, remaining: StringView*) -> bool {
-        assert(result != 0);
+    fn parse_s64(self) -> (i64, bool) {
         *self = self.trim_left();
         if(self.len == 0) return false;
 
@@ -196,17 +195,14 @@ impl StringView {
             }
         }
 
-        // NOTE: I don't think Zen-C handles StringView::_digit_val() correctly
         let digit = StringView::_digit_val((int)self.data[0]);
         if(digit >= base) {
             // super special case
             if(foundBase) {
-                *result = 0;
-                if(remaining) {
-                    *remaining = StringView{data: self.data - 1, len: self.len + 1};
-                }
+                self.data -= 1;
+                self.len += 1;
             }
-            return foundBase;
+            return (0, foundBase);
         }
 
         let value: i64 = 0;
@@ -227,11 +223,9 @@ impl StringView {
         if(negative) {
             value = -value;
         }
-        *result = value;
-        if(remaining) {
-            *remaining = StringView{data: self.data + j, len: self.len - j};
-        }
-        return true;
+        self.data += j;
+        self.len -= j;
+        return (value, true);
     }
 
     // TODO: parse_f64 (this will be big)
